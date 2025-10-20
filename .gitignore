@@ -1,0 +1,20 @@
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# .NET
+backend/**/bin/
+backend/**/obj/
+backend/.vs/
+backend/**/Properties/launchSettings.json
+
+# Environment files
+*.env
+*.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
