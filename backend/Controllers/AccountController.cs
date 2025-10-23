@@ -27,7 +27,7 @@ namespace AuthApp.Controllers
         {
             if (login == null) return BadRequest("Invalid client request");
 
-            if (login.UserName == "admin" && login.Password == "password")
+            if (login.UserName == "admin" && login.Password == "password1234")
             {
                 var claims = new List<Claim>
                 {
@@ -37,13 +37,23 @@ namespace AuthApp.Controllers
                 };
 
                 var accessToken = _tokenService.GenerateAccessToken(claims);
+
+                Response.Cookies.Append("access_token", accessToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddMinutes(10)
+                });
+
                 return Ok(new
                 {
                     message = "Login successful",
-                    access_token = accessToken
+                    user_name = login.UserName,
+                    roles = new[] { "Admin" }
                 });
             }
-            return Unauthorized();
+            return Unauthorized(new { message = "Invalid credentials" });
         }
     }
 }
