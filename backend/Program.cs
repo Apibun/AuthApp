@@ -23,9 +23,20 @@ builder.Services.AddCors(options =>
         });
 });
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication()
     .AddJwtBearer(options =>
     {
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+             {
+                 if (context.Request.Cookies.ContainsKey("access_token"))
+                 {
+                     context.Token = context.Request.Cookies["access_token"];
+                 }
+                 return Task.CompletedTask;
+             }
+        };
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -38,6 +49,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddAuthorization();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 var app = builder.Build();
@@ -52,7 +64,7 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowSpecificOrigin");
 
-app.UseAuthorization();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

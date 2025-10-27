@@ -1,10 +1,9 @@
 ﻿using AuthApp.Models.ViewModel;
 using AuthApp.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -42,8 +41,8 @@ namespace AuthApp.Controllers
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = DateTimeOffset.UtcNow.AddMinutes(10)
+                    SameSite = SameSiteMode.None,
+                    Expires = DateTime.Now.AddMinutes(30),
                 });
 
                 return Ok(new
@@ -54,6 +53,21 @@ namespace AuthApp.Controllers
                 });
             }
             return Unauthorized(new { message = "Invalid credentials" });
+        }
+
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetUserProfile()
+        {
+            var userName = User.Identity?.Name;
+            if (userName != null)
+            {
+                return Ok(new
+                {
+                    user_name = userName,
+                    roles = User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(r => r.Value).ToArray()
+                });
+            }
+            return Unauthorized(new { message = "User not authenticated" });
         }
     }
 }
