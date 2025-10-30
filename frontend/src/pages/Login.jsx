@@ -14,16 +14,20 @@ export default function Login() {
   };
 
   return (
-    <form onSubmit={handleLogin}>
-      <label>
-        UserName: <input name="username" type="text" />
-      </label>
-      <br />
-      <label>
-        Password: <input name="password" type="password" />
-      </label>
-      <br />
-      <button type="submit">Login</button>
-    </form>
+    <div
+      style={{ display: "flex", justifyContent: "center", marginTop: "50px" }}
+    >
+      <form onSubmit={handleLogin}>
+        <label>
+          UserName: <input name="username" type="text" />
+        </label>
+        <br />
+        <label>
+          Password: <input name="password" type="password" />
+        </label>
+        <br />
+        <button type="submit">Login</button>
+      </form>
+    </div>
   );
 }
