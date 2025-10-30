@@ -2,13 +2,13 @@ import { createContext, useState, useContext, useEffect } from "react";
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch("https://localhost:44360/api/account/profile", {
+  const fetchProfile = () => {
+    return fetch("https://localhost:44360/api/account/profile", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -29,6 +29,10 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(false);
       })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchProfile();
   }, []);
 
   const login = (username, password) => {
@@ -44,21 +48,48 @@ export const AuthProvider = ({ children }) => {
         if (!res.ok) throw new Error("Login failed");
         return res.json();
       })
-      .then((data) => {
-        console.log("Login response:", data);
-        setUser({ username: data.user_name, roles: data.roles });
+      .then(async () => {
         setIsAuthenticated(true);
+        await fetchProfile();
       })
       .catch((error) => {
         console.error("Error during login:", error);
+        setUser(null);
+        setIsAuthenticated(false);
+      });
+  };
+
+  const logout = () => {
+    return fetch("https://localhost:44360/api/account/logout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Logout failed");
+        return res.json();
+      })
+      .then((data) => {
+        console.log(data);
+        setUser(null);
+        setIsAuthenticated(false);
+      })
+      .catch((eror) => {
+        console.error("Error during logout:", eror);
       });
   };
 
   return (
-    <AuthContext.Provider value={{ login, user, isAuthenticated, loading }}>
+    <AuthContext.Provider
+      value={{ login, logout, user, isAuthenticated, loading, fetchProfile }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
+
+export default AuthProvider;
 
 export const useAuth = () => useContext(AuthContext);

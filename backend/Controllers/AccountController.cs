@@ -1,7 +1,7 @@
 ﻿using AuthApp.Models.ViewModel;
 using AuthApp.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
@@ -48,13 +48,25 @@ namespace AuthApp.Controllers
                 return Ok(new
                 {
                     message = "Login successful",
-                    user_name = login.UserName,
-                    roles = new[] { "Admin" }
                 });
             }
             return Unauthorized(new { message = "Invalid credentials" });
         }
 
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            Response.Cookies.Delete("access_token", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.Now.AddDays(-1),
+            });
+            return Ok(new { message = "Logout successful" });
+        }
+
+        [Authorize]
         [HttpGet("profile")]
         public async Task<IActionResult> GetUserProfile()
         {
