@@ -1,8 +1,9 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext.jsx";
 
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+const ProtectedRoute = ({ children, roles }) => {
+  const { isAuthenticated, loading, user } = useAuth();
+  const roleCanAccess = roles?.some((r) => user?.roles.includes(r));
 
   if (loading) {
     // optional: show spinner or blank page
@@ -11,6 +12,10 @@ const ProtectedRoute = ({ children }) => {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
+  }
+
+  if (roles && !roleCanAccess) {
+    return <Navigate to="/unauthorized" />;
   }
 
   return children;
